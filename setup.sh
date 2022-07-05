@@ -3,7 +3,17 @@
 # Interactive Setup Script for Powerwall Dashboard
 # by Jason Cox - 21 Jan 2022
 
-echo "Powerwall Dashboard - SETUP"
+# Stop on Errors
+set -e
+
+if [ ! -f VERSION ]; then
+  echo "ERROR: Missing VERSION file. Setup must run from installation directory."
+  echo ""
+  exit 1
+fi
+VERSION=`cat VERSION`
+
+echo "Powerwall Dashboard (v${VERSION}) - SETUP"
 echo "-----------------------------------------"
 
 # Verify not running as root
@@ -37,7 +47,8 @@ if ! docker-compose version > /dev/null 2>&1; then
     exit 1
 fi
 
-ENV_FILE="pypowerwall.env"
+PW_ENV_FILE="pypowerwall.env"
+GF_ENV_FILE="grafana.env"
 CURRENT=`cat tz`
 
 echo "Timezone (leave blank for ${CURRENT})"
@@ -45,29 +56,35 @@ read -p 'Enter Timezone: ' TZ
 echo ""
 
 # Powerwall Credentials 
-if [ -f ${ENV_FILE} ]; then
+if [ -f ${PW_ENV_FILE} ]; then
     echo "Current Powerwall Credentials:"
     echo ""
-    cat ${ENV_FILE}
+    cat ${PW_ENV_FILE}
     echo ""
     read -r -p "Update these credentials? [y/N] " response
     if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
-        rm ${ENV_FILE}
+        rm ${PW_ENV_FILE}
     else
-        echo "Using existing ${ENV_FILE}."
+        echo "Using existing ${PW_ENV_FILE}."
     fi
 fi
 
-if [ ! -f ${ENV_FILE} ]; then
+# Create Powerwall Settings
+if [ ! -f ${PW_ENV_FILE} ]; then
     echo "Enter credentials for Powerwall..."
     read -p 'Password: ' PASSWORD
     read -p 'Email: ' EMAIL
     read -p 'IP Address: ' IP
-    echo "PW_EMAIL=${EMAIL}" > ${ENV_FILE}
-    echo "PW_PASSWORD=${PASSWORD}" >> ${ENV_FILE}
-    echo "PW_HOST=${IP}" >> ${ENV_FILE}
-    echo "PW_TIMEZONE=America/Los_Angeles" >> ${ENV_FILE}
-    echo "PW_DEBUG=no" >> ${ENV_FILE}
+    echo "PW_EMAIL=${EMAIL}" > ${PW_ENV_FILE}
+    echo "PW_PASSWORD=${PASSWORD}" >> ${PW_ENV_FILE}
+    echo "PW_HOST=${IP}" >> ${PW_ENV_FILE}
+    echo "PW_TIMEZONE=America/Los_Angeles" >> ${PW_ENV_FILE}
+    echo "PW_DEBUG=no" >> ${PW_ENV_FILE}
+fi
+
+# Create Grafana Settings if missing (required in 2.4.0)
+if [ ! -f ${GF_ENV_FILE} ]; then
+    cp "${GF_ENV_FILE}.sample" "${GF_ENV_FILE}"
 fi
 
 echo ""

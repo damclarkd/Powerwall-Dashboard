@@ -58,15 +58,17 @@ You will want to set your local timezone by editing `pypowerwall.env`, `influxdb
 
 ### Docker Containers
 
-* Rename `pypowerwall.sample` to `pypowerwall.env` and update the following details for your Powerwall:
+* Copy `pypowerwall.env.sample` to `pypowerwall.env` and update the following details for your Powerwall:
 
-  ```
+  ```bash
       PW_EMAIL=email@example.com
       PW_PASSWORD=password
       PW_HOST=192.168.91.1
       PW_TIMEZONE=America/Los_Angeles
       PW_DEBUG=no
   ```
+
+* Copy `grafana.env.sample` to `grafana.env` - you do not need to edit these defaults. However, there are optional settings for alert notifications and HTTPS.
 
 * Start the docker containers
 
@@ -100,12 +102,20 @@ Note: It can take a while for InfluxDB to start.  Also the influxdb.sql file is 
   - Enter your latitude and longitude. You can use this [web page](https://jasonacox.github.io/Powerwall-Dashboard/location.html) to find your GPS location if you don't know).
   - Click "Save & test" button
 
-* From `Dashboard\Manage` (or `Dashboard\Browse`), select `Import`, and upload `dashboard.json`
+* From `Dashboard\Manage` (or `Dashboard\Browse`), select `Import`, and upload one of the dashboard files below:
+
+  1. `dashboard.json` - Basic dashboard with the live trend graph, monthly power graphs and a Powerwall+ section that includes String data, temperature, voltage and frequency graphs.
+  2. `dashboard-animation.json` - Same as above but includes an animated power flow diagram between solar, grid, house and Powerwall.  It also includes a "grid status" graph below the animation to identify and track grid outages.
+  3. `dashboard-simple.json` - Similar to dashboard.json but without the Powerwall+ metrics.
+  4. `dashboard-grid.json` - Same as dashboard-animation.json but with a simple grid status instead of the trend data.
 
 ### Notes
 
 * The database queries and dashboard are set to use `America/Los_Angeles` as the timezone. Remember to edit the database commands [influxdb.sql](influxdb/influxdb.sql), [powerwall.yml](powerwall.yml), and [dashboard.json](dashboard.json) to replace `America/Los_Angeles` with your own timezone.
 
+### Upgrading
+
+* The included `upgrade.sh` script will attempt to upgrade your installation to the latest Powerwall-Dashboard version without removing existing data. A backup is still recommended.
 
 ### Troubleshooting Tips and Tricks
 
